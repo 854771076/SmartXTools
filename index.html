@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量转账</title>
+    <style>
+        .main {
+            margin: 0 auto;
+            max-width: 600px;
+            width: 90%;
+            box-sizing: border-box;
+            margin-top: 20px;
+        }
+        
+        .main * {
+            width: 100%;
+            height: 45px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        
+        textarea {
+            resize: none;
+        }
+        
+        table {
+            border-collapse: collapse;
+        }
+        
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            text-align: center;
+        }
+        
+        table {
+            width: 100%;
+        }
+        
+        thead {
+            background-color: skyblue;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="jquery.min.js"></script>
+    <script src="transfer.js"></script>
+    <div class="main">
+        <label>公钥:<input type="text" placeholder="公钥" id="pubkey" autocomplete='on'></label>
+        <label>私钥:<input type="password" placeholder="私钥" id="prekey" autocomplete='on'></label>
+        <label>地址:<textarea id="addressout" placeholder="地址(回车分割)"></textarea></label>
+        <label>数量:<textarea id="amount" placeholder="数量(回车分割)"></textarea></label>
+        <label>nonce:<input type="text" id="noncecur" placeholder="当前nonce"></label>
+        <label>data:<input type="text" placeholder="data" id="data"></label>
+        <label>depend:<input type="text" placeholder="depend" id="depend"></label>
+        <label>remarks:<input type="text" placeholder="remarks" id="remarks"></label>
+
+        <button id="submit">转出</button>
+        <table id="logs" style="table-layout: fixed; word-break: break-all; border-collapse: collapse">
+            <thead>
+                <tr>
+                    <td>当前地址</td>
+                    <td>转出地址</td>
+                    <td>数量</td>
+                    <td>交易哈希</td>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+    <script>
+        var hashs = [];
+
+        function getCookie(cookieName) {
+            const strCookie = document.cookie
+            const cookieList = strCookie.split(';')
+
+            for (let i = 0; i < cookieList.length; i++) {
+                const arr = cookieList[i].split('=')
+                if (cookieName === arr[0].trim()) {
+                    return arr[1]
+                }
+            }
+
+            return ''
+        }
+
+        function setCookie(name, value, daysToLive) {
+            // 对 cookie 值进行编码以转义其中的分号、逗号和空格
+            var cookie = name + "=" + encodeURIComponent(value);
+
+            if (typeof daysToLive === "number") {
+                /* 设置 max-age 属性 */
+                cookie += "; max-age=" + (daysToLive * 24 * 60 * 60);
+            }
+            document.cookie = cookie;
+        }
+
+        function OnRefreshAmount() {
+            $.ajax({
+                url: 'http://198.44.160.145:8101/balanceOf',
+                dataType: "text",
+                type: "get",
+                data: {
+                    Address: pubkey.value,
+                    token: ''
+                },
+                success: function(data) {
+                    var jsonObj = JSON.parse(data);
+                    var nonce = parseInt(jsonObj["nonce"]);
+                    noncecur.value = String(nonce + 1);
+                },
+                error: function(err) {}
+            });
+            setTimeout(function() {
+                OnRefreshAmount();
+            }, 2000);
+        }
+        OnRefreshAmount()
+        $('#submit').click(function() {
+            Prekey = prekey.value
+            addressCur = pubkey.value
+            Amount = amount.value.split('\n')
+            addressOut = addressout.value.split('\n')
+            Nonce = noncecur.value
+            setCookie('prekey', prekey.value)
+            setCookie('pubkey', pubkey.value)
+            if (Prekey == '' || addressCur == '' || amount == '' || addressOut == '') {
+                alert("必填参数为空!")
+                return false
+            }
+            Data = data.value
+            Depend = depend.value
+            Remarks = remarks.value
+            for (var i = 0; i < addressOut.length; i++) {
+                if (Amount.length == 1) {
+                    hashs.push([addressCur, addressOut, Amount, sendData(Prekey, Amount[0], addressCur, addressOut[i], Data, Depend, Nonce, Remarks)])
+                } else {
+                    hashs.push([addressCur, addressOut, Amount, sendData(Prekey, Amount[i], addressCur, addressOut[i], Data, Depend, Nonce, Remarks)])
+                }
+                Nonce++
+            }
+
+
+            alert('转出成功！')
+            Refreshlogs()
+        })
+        prekey.value = getCookie('prekey')
+        pubkey.value = getCookie('pubkey')
+
+        function Refreshlogs() {
+            html = ''
+            for (var i = 0; i < hashs.length; i++) {
+                html += `<tr>
+                    <td>${hashs[i][0]}</td>
+                    <td>${hashs[i][1]}</td>
+                    <td>${hashs[i][2]}</td>
+                    <td>${hashs[i][3]}</td>
+                </tr>`
+            }
+            document.querySelector('#logs>tbody').innerHTML = html
+        }
+    </script>
+</body>
+
+</html>
