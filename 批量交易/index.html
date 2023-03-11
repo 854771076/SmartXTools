@@ -44,6 +44,9 @@
         thead {
             background-color: skyblue;
         }
+        a{
+            text-decoration: none;
+        }
     </style>
 </head>
 
@@ -168,7 +171,7 @@
                     <td>${hashs[i][0]}</td>
                     <td>${hashs[i][1]}</td>
                     <td>${hashs[i][2]}</td>
-                    <td>${hashs[i][3]}</td>
+                    <td><a href="http://smartx.one/AddressSearch?address=${hashs[i][3]}">${hashs[i][3]}</a></td>
                 </tr>`
             }
             document.querySelector('#logs>tbody').innerHTML = html
