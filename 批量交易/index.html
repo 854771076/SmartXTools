@@ -44,6 +44,9 @@
         thead {
             background-color: skyblue;
         }
+        a{
+            text-decoration: none;
+        }
     </style>
 </head>
 
@@ -131,33 +134,37 @@
         }
         OnRefreshAmount()
         
-        
-        function OnRefreshStatus() {
-            var tr_index=0
-            var Logs=document.querySelectorAll('#logs tbody tr')
-            for(var index=1;index<hashs.length;index++){
+        var Logs=document.querySelectorAll('#logs tbody tr>td:nth-child(5)')
+        for(var i=0;i<Logs.length;i++){
+            Logs[i].addEventListener('click',function(){
+                var self=this
                 $.ajax({
-                url: ruler.value + '/satrpc/?v=1.0.0&cmd=block-by-tranhash&hash=' + hashs[index][3],
+                url: ruler.value + '/satrpc/?v=1.0.0&cmd=block-by-tranhash&hash=' + this.previousElementSibling.innerText,
                 dataType: "text",
                 type: "get",
-
+                
                 success: function(data) {
-                    console.log(data,index)
                     if(data!='false'){
-                        Logs[tr_index].children[4].innerHTML='true'
+                        self.innerHTML='true'
+                        console.log(self)
                     }
                     else{
-                        Logs[tr_index].children[4].innerHTML='false'
+                        self.innerHTML='false'
                     }
-                    tr_index++
                 },
                 error: function(err) {}
             });
+            
+            })
+        }
+        function OnRefreshStatus() {
+            for(var i=0;i<Logs.length;i++){
+                Logs[i].click()
             }
             
             setTimeout(function() {
                 OnRefreshStatus();
-            }, 5000);
+            }, 15000);
         }
         OnRefreshStatus()
         $('#submit').click(function() {
@@ -189,7 +196,7 @@
             alert('转出成功！')
             Refreshlogs()
             setCookie('hashs', hashs.join('$'))
-            // window.location.reload()
+            window.location.reload()
         })
         prekey.value = getCookie('prekey')
         pubkey.value = getCookie('pubkey')
