@@ -4891,8 +4891,7 @@ Hashes = {
     }
 }(this));
 
-
-function sendData(prekey, amount, addressCur, addressOut, data, depend, nonce, remarks) {
+function sendData(ruler, prekey, amount, addressCur, addressOut, data, depend, nonce, remarks) {
     type = 'transfer'
     addressKeyPair = Wallet.ImportKeyPair(prekey);
     timestamp = new Date().getTime();
@@ -4900,21 +4899,20 @@ function sendData(prekey, amount, addressCur, addressOut, data, depend, nonce, r
     hash = new Hashes.SHA256().hex(hashdata);
     sign = Wallet.sign(hash, addressKeyPair);
     signHex = Wallet.Bytes2Hex(sign);
-
     transferdata = { type: type, hash: hash, nonce: nonce, addressIn: addressCur, addressOut: addressOut, amount: amount, data: data, depend: depend, timestamp: timestamp, sign: signHex, remarks: remarks }
     $.ajax({
-        url: `http://198.44.160.145:8101/satrpc/?v1.0.0&cmd=Transfer&type=${type}&hash=${hash}&nonce=${nonce}&addressIn=${addressCur}&addressOut=${addressOut}&amount=${amount}&data=${data}&depend=${depend}&timestamp=${timestamp}&sign=${signHex}&remarks=${remarks}`,
+        url: `${ruler}/satrpc/?v1.0.0&cmd=Transfer&type=${type}&hash=${hash}&nonce=${nonce}&addressIn=${addressCur}&addressOut=${addressOut}&amount=${amount}&data=${data}&depend=${depend}&timestamp=${timestamp}&sign=${signHex}&remarks=${remarks}`,
         dataType: "text",
         type: "get",
         success: function(data) {
             var jsonObj = JSON.parse(data);
-            var rel = jsonObj["rel"];
+            var res = jsonObj["success"];
             console.log(jsonObj)
-            return rel
         },
         error: function(err) {
 
         }
     });
+
     return hash;
 };
