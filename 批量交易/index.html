@@ -146,7 +146,6 @@
                 success: function(data) {
                     if(data!='false'){
                         self.innerHTML='true'
-                        console.log(self)
                     }
                     else{
                         self.innerHTML='false'
@@ -196,6 +195,7 @@
             alert('转出成功！')
             Refreshlogs()
             setCookie('hashs', hashs.join('$'))
+            // window.location.reload()
         })
         prekey.value = getCookie('prekey')
         pubkey.value = getCookie('pubkey')
@@ -208,7 +208,7 @@
                     <td>${hashs[i][0]}</td>
                     <td>${hashs[i][1]}</td>
                     <td>${hashs[i][2]}</td>
-                    <td><a href="http://smartx.one/AddressSearch?address=${hashs[i][3]}" target="_blank">${hashs[i][3]}</a></td>
+                    <td><a href="http://smartx.one/TransactionDetails?hash=${hashs[i][3]}" target="_blank">${hashs[i][3]}</a></td>
                     <td></td>
                 </tr>`
             }
